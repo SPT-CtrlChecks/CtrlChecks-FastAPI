@@ -37,11 +37,18 @@ pip install -r requirements.txt
 
 ### Configuration
 
-Create a `.env` file (copy from `.env.example`):
+Create a `.env` file (copy from `env.example`):
+
+```bash
+cp env.example .env
+```
+
+Then edit `.env` with your settings:
 
 ```env
 OLLAMA_URL=http://localhost:11434
 PORT=8000
+WORKER_URL=http://localhost:3001
 ALLOWED_ORIGINS=*
 TIMEOUT_SECONDS=180.0
 ```
@@ -98,7 +105,7 @@ curl http://localhost:8000/api/tags
 curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen2.5:3b",
+    "model": "llama3.1:8b",
     "messages": [
       {"role": "user", "content": "Hello!"}
     ],
@@ -112,7 +119,7 @@ curl -X POST http://localhost:8000/api/chat \
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen2.5:3b",
+    "model": "llama3.1:8b",
     "prompt": "Write a short story",
     "stream": false
   }'
@@ -134,9 +141,15 @@ curl -X POST http://localhost:8000/api/generate \
 ```
 Fast_API_Ollama/
 ├── main.py              # FastAPI application
+├── ollama_client.py     # Ollama client wrapper
 ├── requirements.txt     # Python dependencies
-├── .env.example        # Environment variable template
-└── README.md           # This file
+├── env.example          # Environment variable template
+├── deploy.sh            # Production deployment script
+├── Dockerfile           # Docker configuration
+├── README.md            # This file
+├── README_DEPLOYMENT.md # Deployment guide
+├── PRODUCTION_SETUP.md  # Production checklist
+└── tests/               # Test files
 ```
 
 ### Adding New Endpoints
@@ -200,7 +213,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ### "Model not found"
 
-- Pull the model: `ollama pull qwen2.5:3b`
+- Pull the models: `ollama pull llama3.1:8b` and `ollama pull qwen2.5-coder:7b`
 - List available models: `ollama list`
 
 ### CORS errors

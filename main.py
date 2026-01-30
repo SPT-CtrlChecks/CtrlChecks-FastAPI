@@ -108,21 +108,21 @@ WORKER_URL = settings.worker_url.rstrip("/")
 # -------------------------------------------------
 class RunRequest(BaseModel):
     prompt: str
-    model: str = "qwen2.5:3b"
+    model: str = "llama3.1:8b"  # Production model for general tasks
     timeout: int = 180
 
 class ProcessRequest(BaseModel):
     task: str
     input: str = None
     image: str = None  # Base64 encoded image for image processing tasks
-    model: str = "qwen2.5:3b"
+    model: str = "llama3.1:8b"  # Production model for general tasks
     timeout: int = 180
     sentence_count: int = 5  # For story generation
     steps: int = 2  # For text-to-image (not supported, but kept for compatibility)
     guidance_scale: float = 1.0  # For text-to-image (not supported, but kept for compatibility)
 
 class ChatRequest(BaseModel):
-    model: str = "qwen2.5:3b"
+    model: str = "llama3.1:8b"  # Production model for general tasks
     messages: list
     stream: bool = False
     options: dict = None
@@ -221,7 +221,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    model: str = "qwen2.5:3b"
+    model: str = "llama3.1:8b"  # Production model for general tasks
     messages: list[ChatMessage]
     stream: bool = False
     options: dict | None = None
@@ -242,7 +242,7 @@ async def chat_proxy(request: Request):
     Supports streaming and non-streaming modes.
     
     **Request Body:**
-    - `model`: Model name (e.g., "qwen2.5:3b")
+    - `model`: Model name (e.g., "llama3.1:8b" for general tasks, "qwen2.5-coder:7b" for code tasks)
     - `messages`: List of message objects with `role` and `content`
     - `stream`: Whether to stream the response (default: false)
     - `options`: Additional model options (optional)
@@ -250,7 +250,7 @@ async def chat_proxy(request: Request):
     **Example:**
     ```json
     {
-        "model": "qwen2.5:3b",
+        "model": "llama3.1:8b",
         "messages": [
             {"role": "user", "content": "Hello!"}
         ],
@@ -336,7 +336,7 @@ async def generate_proxy(request: Request):
     This is a direct text generation endpoint, not conversational.
     
     **Request Body:**
-    - `model`: Model name (e.g., "qwen2.5:3b")
+    - `model`: Model name (e.g., "llama3.1:8b" for general tasks, "qwen2.5-coder:7b" for code tasks)
     - `prompt`: Text prompt to generate from
     - `stream`: Whether to stream the response (default: false)
     - `options`: Additional model options (optional)
@@ -344,7 +344,7 @@ async def generate_proxy(request: Request):
     **Example:**
     ```json
     {
-        "model": "qwen2.5:3b",
+        "model": "llama3.1:8b",
         "prompt": "Write a short story about",
         "stream": false
     }
@@ -410,13 +410,11 @@ async def process(req: ProcessRequest):
             if not req.image:
                 raise HTTPException(status_code=400, detail=f"Image data required for task: {req.task}")
             
-            # Use vision model for image tasks (default: llava)
-            vision_model = "llava"  # Default vision model
-            if req.model and ("llava" in req.model.lower() or "vision" in req.model.lower() or "vl" in req.model.lower()):
-                vision_model = req.model
-            else:
-                # Override model to use vision model for image tasks
-                vision_model = "llava"
+            # Vision models not supported - return error
+            raise HTTPException(
+                status_code=501, 
+                detail="Image processing functionality has been removed. Multimodal features are no longer supported. Please use text-based models: llama3.1:8b (general) or qwen2.5-coder:7b (code)."
+            )
             
             # Prepare image (remove data URL prefix if present)
             image_base64 = req.image

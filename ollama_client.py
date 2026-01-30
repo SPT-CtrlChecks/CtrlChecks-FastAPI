@@ -4,10 +4,10 @@ import time
 
 class OllamaClient:
     def __init__(self):
+        # Production models for AWS g4dn.xlarge (16GB GPU)
         self.models = {
-            "qwen2.5:3b": "qwen2.5:3b",
-            "llama3.2:3b": "llama3.2:3b",
-            "phi-2": "phi-2"
+            "llama3.1:8b": "llama3.1:8b",  # General purpose (4.9GB)
+            "qwen2.5-coder:7b": "qwen2.5-coder:7b"  # Code generation (4.5GB)
         }
         
     def list_models(self):
@@ -27,7 +27,7 @@ class OllamaClient:
         Generate response from specified model
         
         Args:
-            model: Model name (qwen2.5:3b, llama3.2:3b, phi-2)
+            model: Model name (llama3.1:8b for general tasks, qwen2.5-coder:7b for code tasks)
             prompt: Input prompt
             options: Additional options like temperature, max_tokens
             
